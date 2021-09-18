@@ -6,7 +6,6 @@
 Base Source Code taken from : Krishna Repo Link
 """
 
-
 class Client:
 
     def __init__(self, dataset_x, dataset_y, epoch_number, learning_rate, weights, batch):
@@ -47,7 +46,8 @@ class Client:
         # wait=animation.Wait()
         # wait.start()
 
-        model.compile(loss='sparse_categorical_crossentropy',
+        model.compile(
+                        loss='sparse_categorical_crossentropy',
                       optimizer=keras.optimizers.SGD(lr=self.learning_rate),
                       metrics=['accuracy']
                       )

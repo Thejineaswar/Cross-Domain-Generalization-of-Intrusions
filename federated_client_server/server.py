@@ -1,16 +1,9 @@
 import numpy as np
+import tensorflow as tf
 import tensorflow.keras as keras
 from .client import Client
 
-def get_model():
-    model = keras.models.Sequential([
-        keras.layers.Flatten(input_shape=[122, ]),
-        keras.layers.Dense(200, activation='tanh'),
-        keras.layers.Dense(100, activation='tanh'),
-        keras.layers.Dense(5, activation='softmax')
-    ])
-
-    return model
+from .models import *
 
 
 def model_average(client_weights):
@@ -72,7 +65,7 @@ def train_server(training_rounds, epoch, batch, learning_rate):
     accuracy_list = []
     client_weight_for_sending = []
 
-    x_data,y_data,X_valid, y_valid = getdata()
+    x_data,y_data,X_valid,  = getdata()
 
     for index1 in range(1, training_rounds):
         print('Training for round ', index1, 'started')
@@ -82,7 +75,14 @@ def train_server(training_rounds, epoch, batch, learning_rate):
             if index1 == 1:
                 print('Sharing Initial Global Model with Random Weight Initialization')
                 initial_weight = create_model()
-                client = Client(x_data[index], y_data[index], epoch, learning_rate, initial_weight, batch)
+                client = Client(
+                        x_data[index],
+                        y_data[index],
+                        epoch,
+                        learning_rate,
+                        initial_weight,
+                        batch
+                    )
                 weight = client.train()
                 client_weights_tobe_averaged.append(weight)
             else:
@@ -152,3 +152,4 @@ def train_server_weight_discard(training_rounds, epoch, batch, learning_rate):
             accuracy_list.append(accuracy_list[len(accuracy_list) - 1])
 
     return accuracy_list, client_weight_for_sending
+
