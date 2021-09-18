@@ -5,6 +5,7 @@
 @author: krishna
 Base Source Code taken from : Krishna Repo Link
 """
+from .models import *
 
 class Client:
 
@@ -23,15 +24,10 @@ class Client:
         import pandas as pd
         import matplotlib as plt
         from tensorflow import keras
+        from .models import *
         from .server import *
 
-        model = get_model()
-        # model=keras.models.Sequential([
-        #         keras.layers.Flatten(input_shape=[122,]),
-        #         keras.layers.Dense(200,activation='tanh'),
-        #         keras.layers.Dense(100,activation='tanh'),
-        #         keras.layers.Dense(5,activation='softmax')
-        #     ])
+        model,AE,MLP = get_model()
 
         # setting weight of the model
         model.set_weights(self.weights)
@@ -46,23 +42,24 @@ class Client:
         # wait=animation.Wait()
         # wait.start()
 
-        model.compile(
-                        loss='sparse_categorical_crossentropy',
-                      optimizer=keras.optimizers.SGD(lr=self.learning_rate),
-                      metrics=['accuracy']
+        model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=self.learning_rate),
+                      loss=[
+                          tf.keras.losses.SparseCategoricalCrossentropy(),
+                          tf.keras.losses.SparseCategoricalCrossentropy()
+                      ],
+                      metrics=[
+                          tf.keras.metrics.Accuracy(name='AE_Accuracy'),
+                          tf.keras.metrics.AUC(name='ANN_Accuracy'),
+                      ]
                       )
+
         history = model.fit(
             self.dataset_x, self.dataset_y,
             epochs=self.epoch_number,
             batch_size=self.batch
         )
 
-        # getting the final_weight
-        output_weight = model.get_weights()
-
-        # wait.stop()
-
-        return output_weight
+        return MLP
 
 
 

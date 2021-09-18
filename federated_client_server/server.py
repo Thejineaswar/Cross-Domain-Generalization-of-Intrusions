@@ -4,7 +4,7 @@ import tensorflow.keras as keras
 from .client import Client
 
 from .models import *
-
+from .data import *
 
 def model_average(client_weights):
     average_weight_list = []
@@ -24,22 +24,20 @@ def create_model():
     return weight
 
 
-def getdata():
-    """
-    Read all the datasets here and append it to a list. The variable y_data and x_data only contain train data.
-
-    :return: x_data,y_data, X_valid and y_valid
-    """
-    raise NotImplementedError
 
 
 def evaluate_model(accuracy_list, weight, learning_rate, X_valid,y_valid):
-    model = get_model()
+    model ,_,_= get_model()
     model.set_weights(weight)
     model.compile(
-            loss='sparse_categorical_crossentropy',
-            optimizer=keras.optimizers.SGD(lr=learning_rate),
-            metrics=['accuracy']
+        loss=[
+            tf.keras.losses.BinaryCrossentropy(),
+            tf.keras.losses.BinaryCrossentropy(),
+        ],
+        metrics=[
+            tf.keras.metrics.Accuracy(name='AE_Accuracy'),
+            tf.keras.metrics.AUC(name='ANN_Accuracy'),
+        ]
     )
 
     result = model.evaluate(X_valid, y_valid)
@@ -99,7 +97,8 @@ def train_server(training_rounds, epoch, batch, learning_rate):
         model = get_model()
 
         model.set_weights(client_average_weight)
-        model.compile(loss='sparse_categorical_crossentropy', optimizer=keras.optimizers.SGD(lr=learning_rate),
+        model.compile(
+            loss='sparse_categorical_crossentropy', optimizer=keras.optimizers.SGD(lr=learning_rate),
                       metrics=['accuracy'])
         result = model.evaluate(X_valid, y_valid)
         accuracy = result[1]
@@ -116,7 +115,7 @@ def train_server_weight_discard(training_rounds, epoch, batch, learning_rate):
     # batch=64 
     # learning_rate=0.01
 
-    x_data, y_data, _, _ = getdata()
+    x_data, y_data, _, _ = split_data()
 
     accuracy_list = []
     client_weight_for_sending = []

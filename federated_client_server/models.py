@@ -54,4 +54,5 @@ def get_model():
             out_mlp
         ]
     )
+    return model, AE,MLP_
 
