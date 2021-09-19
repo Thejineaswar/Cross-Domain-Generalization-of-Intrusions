@@ -1,13 +1,15 @@
 import numpy as np
-import tensorflow as tf
 import tensorflow.keras as keras
-from .client import Client
+import tensorflow as tf
+from client import Client
 
-from .models import *
-from .data import *
+from models import *
+from data import *
+from model_params import *
 
 def model_average(client_weights):
     average_weight_list = []
+    print(client_weights)
     for index1 in range(len(client_weights[0])):
         layer_weights = []
         for index2 in range(len(client_weights)):
@@ -18,137 +20,93 @@ def model_average(client_weights):
     return average_weight_list
 
 
-def create_model():
-    model = get_model()
-    weight = model.get_weights()
+def create_model(params,ae_weights = None,mlp_weights = None):
+    model, AE,MLP_ = get_model(params,ae_weights,mlp_weights)
+    weight = MLP_.get_weights()
     return weight
 
 
 
+CLIENT_PRINT = {
+    0: "CICIDS 2018",
+    1: "CICIDS 2017"
+}
 
-def evaluate_model(accuracy_list, weight, learning_rate, X_valid,y_valid):
-    model ,_,_= get_model()
-    model.set_weights(weight)
-    model.compile(
-        loss=[
-            tf.keras.losses.BinaryCrossentropy(),
-            tf.keras.losses.BinaryCrossentropy(),
-        ],
-        metrics=[
-            tf.keras.metrics.Accuracy(name='AE_Accuracy'),
-            tf.keras.metrics.AUC(name='ANN_Accuracy'),
-        ]
-    )
-
-    result = model.evaluate(X_valid, y_valid)
-
-    if len(accuracy_list) == 0:
-        accuracy_list.append(0)
-        if result[1] > accuracy_list[len(accuracy_list) - 1]:
-            return True, result[1]
-
-    elif result[1] > accuracy_list[len(accuracy_list) - 1]:
-        return True, result[1]
-    else:
-        return False, result[1]
-
-
+PARAMS = get_model_params()
 
 def train_server(training_rounds, epoch, batch, learning_rate):
-    # temp_variable
-    # training_rounds=2 
-    # epoch=5 
+    # training_rounds=2
+    # epoch=5
     # batch=128
 
     accuracy_list = []
     client_weight_for_sending = []
 
-    x_data,y_data,X_valid,  = getdata()
+    x_data,x_test,y_data,y_test = split_data()
 
     for index1 in range(1, training_rounds):
         print('Training for round ', index1, 'started')
         client_weights_tobe_averaged = []
+        client_ae_weights = []
         for index in range(len(y_data)):
-            print('-------Client-------', index)
+            print('-------Client-------', CLIENT_PRINT[index])
             if index1 == 1:
                 print('Sharing Initial Global Model with Random Weight Initialization')
-                initial_weight = create_model()
+                initial_weight = create_model(PARAMS[index])
                 client = Client(
                         x_data[index],
                         y_data[index],
                         epoch,
                         learning_rate,
                         initial_weight,
-                        batch
+                        batch,
+                    PARAMS[index]
                     )
-                weight = client.train()
-                client_weights_tobe_averaged.append(weight)
+                AE_weights, MLP_weights = client.train()
+                client_weights_tobe_averaged.append(MLP_weights)
+                client_ae_weights.append(AE_weights)
             else:
-                client = Client(x_data[index], y_data[index], epoch, learning_rate,
-                                client_weight_for_sending[index1 - 2], batch)
-                weight = client.train()
-                client_weights_tobe_averaged.append(weight)
+                client = Client(x_data[index],
+                                y_data[index],
+                                epoch,
+                                learning_rate,
+                                client_weight_for_sending[index1 - 2],
+                                batch,
+                                PARAMS[index]) # why minus 2?
+                AE_weights, MLP_weights = client.train()
+                print(MLP_weights.get_weights())
+                client_weights_tobe_averaged.append(MLP_weights.get_weights())
+                client_ae_weights.append(AE_weights.get_weights())
 
         # calculating the avearge weight from all the clients
         client_average_weight = model_average(client_weights_tobe_averaged)
         client_weight_for_sending.append(client_average_weight)
 
         # validating the model with avearge weight
-        model = get_model()
+        print(f"Evaluation for round{index1}:")
+        for index in range(len(y_test)):
+            model = get_model(PARAMS[index] , ae_weights = client_ae_weights[index], mlp_weights = client_average_weight)
 
-        model.set_weights(client_average_weight)
-        model.compile(
-            loss='sparse_categorical_crossentropy', optimizer=keras.optimizers.SGD(lr=learning_rate),
-                      metrics=['accuracy'])
-        result = model.evaluate(X_valid, y_valid)
-        accuracy = result[1]
-        print('#######-----Acccuracy for round ', index1, 'is ', accuracy, ' ------########')
-        accuracy_list.append(accuracy)
+            model.compile(
+                loss=tf.keras.losses.BinaryCrossentropy(), optimizer=keras.optimizers.SGD(lr=learning_rate),
+                          metrics=['accuracy'])
+            result = model.evaluate(x_test[index], y_test[index])
+            print(result)
+            accuracy = result[1]
+            print(f"###### Accuracy for {CLIENT_PRINT[index]} -> {result}")
+            #print('#######-----Acccuracy for round ', index1, 'is ', accuracy, ' ------########')
+            accuracy_list.append(accuracy)
 
     return accuracy_list
 
 
-def train_server_weight_discard(training_rounds, epoch, batch, learning_rate):
-    # temp_variable
-    # training_rounds=5
-    # epoch=3
-    # batch=64 
-    # learning_rate=0.01
+if __name__ == '__main__':
+    print("Hey")
+    training_accuracy_list100 = train_server(
+                                                training_rounds=100,
+                                                epoch=1,
+                                                batch=32,
+                                                learning_rate=0.01
+                                             )
 
-    x_data, y_data, _, _ = split_data()
-
-    accuracy_list = []
-    client_weight_for_sending = []
-
-    for index1 in range(1, training_rounds):
-        print('Training for round ', index1, 'started')
-        client_weights_tobe_averaged = []
-        for index in range(len(y_data)):
-            print('-------Client-------', index)
-            if index1 == 1:
-                print('Sharing Initial Global Model with Random Weight Initialization')
-                initial_weight = create_model()
-                client = Client(x_data[index], y_data[index], epoch, learning_rate, initial_weight, batch)
-                weight = client.train()
-                client_weights_tobe_averaged.append(weight)
-            else:
-                client = Client(x_data[index], y_data[index], epoch, learning_rate,
-                                client_weight_for_sending[index1 - 2], batch)
-                weight = client.train()
-                client_weights_tobe_averaged.append(weight)
-
-        # calculating the avearge weight from all the clients
-        client_average_weight = model_average(client_weights_tobe_averaged)
-        boolean, accuracy = evaluate_model(accuracy_list, client_average_weight, learning_rate)
-        if boolean == True:
-            client_weight_for_sending.append(client_average_weight)
-            print('#######-----Acccuracy for round ', index1, 'is ', accuracy, ' ------########')
-            accuracy_list.append(accuracy)
-
-        else:
-            print('Weight discarded due to low accuarcy')
-            client_weight_for_sending.append(client_weight_for_sending[len(client_weight_for_sending) - 1])
-            accuracy_list.append(accuracy_list[len(accuracy_list) - 1])
-
-    return accuracy_list, client_weight_for_sending
 
