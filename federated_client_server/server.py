@@ -9,10 +9,9 @@ from model_params import *
 
 def model_average(client_weights):
     average_weight_list = []
-    print(client_weights)
     for index1 in range(len(client_weights[0])):
         layer_weights = []
-        for index2 in range(len(client_weights)):
+        for index2 in range(len(client_weights)-1):
             weights = client_weights[index2][index1]
             layer_weights.append(weights)
         average_weight = np.mean(np.array([x for x in layer_weights]), axis=0)
@@ -63,8 +62,8 @@ def train_server(training_rounds, epoch, batch, learning_rate):
                     PARAMS[index]
                     )
                 AE_weights, MLP_weights = client.train()
-                client_weights_tobe_averaged.append(MLP_weights)
-                client_ae_weights.append(AE_weights)
+                client_weights_tobe_averaged.append(MLP_weights.get_weights())
+                client_ae_weights.append(AE_weights.get_weights())
             else:
                 client = Client(x_data[index],
                                 y_data[index],
@@ -74,11 +73,9 @@ def train_server(training_rounds, epoch, batch, learning_rate):
                                 batch,
                                 PARAMS[index]) # why minus 2?
                 AE_weights, MLP_weights = client.train()
-                print(MLP_weights.get_weights())
                 client_weights_tobe_averaged.append(MLP_weights.get_weights())
                 client_ae_weights.append(AE_weights.get_weights())
 
-        # calculating the avearge weight from all the clients
         client_average_weight = model_average(client_weights_tobe_averaged)
         client_weight_for_sending.append(client_average_weight)
 
@@ -101,7 +98,6 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
 
 if __name__ == '__main__':
-    print("Hey")
     training_accuracy_list100 = train_server(
                                                 training_rounds=100,
                                                 epoch=1,
