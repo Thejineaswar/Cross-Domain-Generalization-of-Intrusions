@@ -58,7 +58,7 @@ class Client:
             epochs=self.epoch_number,
             batch_size=self.batch
         )
-        return MLP,AE
+        return AE , MLP
 
 
 

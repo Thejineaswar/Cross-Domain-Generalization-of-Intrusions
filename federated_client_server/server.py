@@ -11,7 +11,7 @@ def model_average(client_weights):
     average_weight_list = []
     for index1 in range(len(client_weights[0])):
         layer_weights = []
-        for index2 in range(len(client_weights)-1):
+        for index2 in range(len(client_weights)-2):
             weights = client_weights[index2][index1]
             layer_weights.append(weights)
         average_weight = np.mean(np.array([x for x in layer_weights]), axis=0)
@@ -20,7 +20,7 @@ def model_average(client_weights):
 
 
 def create_model(params,ae_weights = None,mlp_weights = None):
-    model, AE,MLP_ = get_model(params,ae_weights,mlp_weights)
+    model, AE,MLP_ = get_model(params)
     weight = MLP_.get_weights()
     return weight
 
@@ -81,8 +81,9 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
         # validating the model with avearge weight
         print(f"Evaluation for round{index1}:")
+        print(f"Number of client weights : {len(client_ae_weights)}")
         for index in range(len(y_test)):
-            model = get_model(PARAMS[index] , ae_weights = client_ae_weights[index], mlp_weights = client_average_weight)
+            model = get_model(PARAMS[index] ,ae_weights = client_ae_weights[index], mlp_weights = client_average_weight)
 
             model.compile(
                 loss=tf.keras.losses.BinaryCrossentropy(), optimizer=keras.optimizers.SGD(lr=learning_rate),
