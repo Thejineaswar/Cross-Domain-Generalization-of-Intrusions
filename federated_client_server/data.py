@@ -32,7 +32,7 @@ def split_data(multi_round = True): #to split it into multiple rounds
         df = pd.read_csv(BASE_DIR + DATA_LINK[i])
         df = df.reset_index(drop = True)
         test = df[df['folds'] == 5]
-        train = df[df['folds'] == 4]#df[df['folds'] != 5]
+        train = df[df['folds'] != 5]#df[df['folds'] != 5]
 
         # if folds ==0:
         #     train = train.loc[train['folds'].isin([i for i in range(0,5)])]

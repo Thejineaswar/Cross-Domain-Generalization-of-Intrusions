@@ -11,14 +11,15 @@ from models import *
 from tqdm.keras import TqdmCallback
 class Client:
 
-    def __init__(self, dataset_x, dataset_y, epoch_number, learning_rate, weights, batch,params):
+    def __init__(self, dataset_x, dataset_y, epoch_number, learning_rate, mlp_weights,ae_weights, batch,params):
         self.dataset_x = dataset_x
         self.dataset_y = dataset_y
         # self.mini_batch=mini_batch
         self.epoch_number = epoch_number
         self.learning_rate = learning_rate
         # self.decay_rate=decay_rate
-        self.weights = weights
+        self.weights = mlp_weights
+        self.local_weights = ae_weights
         self.batch = batch
         self.params = params
 
@@ -27,7 +28,7 @@ class Client:
         # from federated_client_server.server import *
         """
         model,AE,MLP = get_model(params_file = self.params,
-                                 ae_weights = None,
+                                 ae_weights = self.local_weights,
                                  mlp_weights = self.weights
                                  )
 

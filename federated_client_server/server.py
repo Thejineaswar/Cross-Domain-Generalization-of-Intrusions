@@ -21,8 +21,9 @@ def model_average(client_weights):
 
 def create_model(params,ae_weights = None,mlp_weights = None):
     model, AE,MLP_ = get_model(params)
-    weight = MLP_.get_weights()
-    return weight
+    ann_weight = MLP_.get_weights()
+    ae_weight = AE.get_weights()
+    return ann_weight,ae_weight
 
 
 
@@ -40,52 +41,54 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
     accuracy_list = []
     client_weight_for_sending = []
+    client_ae_for_sending = [i for i in range(2)]
 
     x_data,x_test,y_data,y_test = split_data()
 
     for index1 in range(1, training_rounds):
         print('Training for round ', index1, 'started')
         client_weights_tobe_averaged = []
-        client_ae_weights = []
         for index in range(len(y_data)):
             print('-------Client-------', CLIENT_PRINT[index])
             if index1 == 1:
                 print('Sharing Initial Global Model with Random Weight Initialization')
-                initial_weight = create_model(PARAMS[index])
+                initial_weight,ae_weight= create_model(PARAMS[index])
                 client = Client(
                         x_data[index],
                         y_data[index],
                         epoch,
                         learning_rate,
                         initial_weight,
+                        ae_weight,
                         batch,
                     PARAMS[index]
                     )
                 AE_weights, MLP_weights = client.train()
                 # print(MLP_weights.get_weights())
                 client_weights_tobe_averaged.append(MLP_weights.get_weights())
-                client_ae_weights.append(AE_weights.get_weights())
+                # client_ae_weights.append(AE_weights.get_weights())
+                client_ae_for_sending[index] = AE_weights.get_weights()
             else:
                 client = Client(x_data[index],
                                 y_data[index],
                                 epoch,
                                 learning_rate,
                                 client_weight_for_sending[index1 - 2],
+                                client_ae_for_sending[index],
                                 batch,
                                 PARAMS[index]) # why minus 2?
                 AE_weights, MLP_weights = client.train()
                 client_weights_tobe_averaged.append(MLP_weights.get_weights())
-                client_ae_weights.append(AE_weights.get_weights())
+                # client_ae_weights.append(AE_weights.get_weights())
+                client_ae_for_sending[index] = AE_weights.get_weights()
 
         client_average_weight = model_average(client_weights_tobe_averaged)
-        print(client_average_weight)
         client_weight_for_sending.append(client_average_weight)
 
         # validating the model with avearge weight
         print(f"Evaluation for round{index1}:")
-        print(f"Number of client weights : {len(client_ae_weights)}")
         for index in range(len(y_test)):
-            model, _,_ = get_model(PARAMS[index] ,ae_weights = client_ae_weights[index], mlp_weights = client_average_weight)
+            model, _,_ = get_model(PARAMS[index] ,ae_weights = client_ae_for_sending[index], mlp_weights = client_average_weight)
 
             model.compile(
                           loss=[
@@ -109,11 +112,11 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
 
 if __name__ == '__main__':
-    training_accuracy_list100 = train_server(
-                                                training_rounds=100,
+    training_accuracy_list = train_server(
+                                                training_rounds=150,
                                                 epoch=1,
                                                 batch=32,
-                                                learning_rate=0.01
+                                                learning_rate=0.001
                                              )
 
 
