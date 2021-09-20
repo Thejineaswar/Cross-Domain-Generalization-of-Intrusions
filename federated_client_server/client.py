@@ -8,6 +8,7 @@ Base Source Code taken from : Krishna Repo Link
 
 import tensorflow as tf
 from models import *
+from tqdm.keras import TqdmCallback
 class Client:
 
     def __init__(self, dataset_x, dataset_y, epoch_number, learning_rate, weights, batch,params):
@@ -56,7 +57,9 @@ class Client:
         history = model.fit(
             self.dataset_x, [self.dataset_y,self.dataset_y],
             epochs=self.epoch_number,
-            batch_size=self.batch
+            batch_size=self.batch,
+            verbose = 0,
+            callbacks=[TqdmCallback(verbose=2)]
         )
         return AE , MLP
 

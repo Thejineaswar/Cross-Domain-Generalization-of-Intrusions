@@ -11,8 +11,12 @@ def MLP_with_weights(num_columns, num_labels, hidden_units, dropout_rates,weight
         x = tf.keras.layers.Activation('sigmoid')(x)
         x = tf.keras.layers.Dropout(dropout_rates[i + 2])(x)
     temp = tf.keras.models.Model(inputs = inp, outputs = x)
-    print(len(temp.get_weights()))
-    temp.set_weights(weights[:-2])
+    print(len(weights))
+    if(len(weights) == 30):
+        temp.set_weights(weights[:-2])
+    else:
+        temp.set_weights(weights)
+
     out = tf.keras.layers.Dense(num_labels, activation='softmax', name='MLP')(temp.layers[-1].output)
     return tf.keras.models.Model(inputs=temp.input, outputs=[out])
 
@@ -54,7 +58,6 @@ def get_model(params_file,ae_weights = None, mlp_weights = None):
     
     x = tf.keras.layers.Input(shape=(params_file['num_columns'],))
     noise = tf.keras.layers.GaussianNoise(params_file['dropout_rates'][0])(x)
-    print(params_file)
     AE = Autoencoder(**params_file)
 
     if ae_weights is not None:
@@ -69,6 +72,7 @@ def get_model(params_file,ae_weights = None, mlp_weights = None):
         params_copy = params_file.copy()
         params_copy['weights'] = mlp_weights
         MLP_ = MLP_with_weights(**params_copy)
+        # print(MLP_.summary())
 
     # if mlp_weights is not None:
     #     MLP_.set_weights(mlp_weights)
