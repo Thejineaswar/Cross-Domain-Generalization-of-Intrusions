@@ -1,11 +1,14 @@
 import numpy as np
 import tensorflow.keras as keras
 import tensorflow as tf
+import pickle
+
 from client import Client
 
 from models import *
 from data import *
 from model_params import *
+
 
 def model_average(client_weights):
     average_weight_list = []
@@ -96,8 +99,8 @@ def train_server(training_rounds, epoch, batch, learning_rate):
                               tf.keras.losses.BinaryCrossentropy()
                           ],
                           metrics=[
-                              tf.keras.metrics.Accuracy(name='AE_Accuracy'),
-                              tf.keras.metrics.AUC(name='ANN_Accuracy'),
+                              tf.keras.metrics.CategoricalAccuracy(name='AE_Accuracy'),
+                              tf.keras.metrics.CategoricalAccuracy(name='ANN_Accuracy'),
                           ]
                           )
             print("Evaluation Started")
@@ -118,5 +121,7 @@ if __name__ == '__main__':
                                                 batch=32,
                                                 learning_rate=0.001
                                              )
+    with open('accuracy_list.txt','wb') as fp:
+        pickle.dump(training_accuracy_list,fp)
 
 

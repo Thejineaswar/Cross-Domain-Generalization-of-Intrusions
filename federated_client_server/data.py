@@ -11,12 +11,6 @@ NUM_LABELS = [
     15
 ]
 
-
-def divide_by_folds():
-    pass
-
-
-
 def split_data(multi_round = True): #to split it into multiple rounds
     from sklearn.decomposition import PCA
 
