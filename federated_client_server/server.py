@@ -32,7 +32,11 @@ def create_model(params,ae_weights = None,mlp_weights = None):
 
 CLIENT_PRINT = {
     0: "CICIDS 2018",
-    1: "CICIDS 2017"
+    1: "CICIDS 2017",
+    2:  "BOT IOT",
+    3: "NSL_KDD",
+    4:"TON_IOT",
+    5:"UNSW_NB15"
 }
 
 PARAMS = get_model_params()
@@ -44,7 +48,7 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
     accuracy_list = []
     client_weight_for_sending = []
-    client_ae_for_sending = [i for i in range(2)]
+    client_ae_for_sending = [i for i in range(len(CLIENT_PRINT.keys()))]
 
     x_data,x_test,y_data,y_test = split_data()
 

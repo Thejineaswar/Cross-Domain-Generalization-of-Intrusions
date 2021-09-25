@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 def MLP_with_weights(num_columns, num_labels, hidden_units, dropout_rates,weights):
-    inp = tf.keras.layers.Input(shape=(148,))
+    inp = tf.keras.layers.Input(shape=(128,))
     x = tf.keras.layers.BatchNormalization()(inp)
     x = tf.keras.layers.Dropout(dropout_rates[3])(x)
 
@@ -42,7 +42,7 @@ def Autoencoder(num_columns, num_labels, hidden_units, dropout_rates):
 
 
 def MLP(num_columns, num_labels, hidden_units, dropout_rates):
-    inp = tf.keras.layers.Input(shape=(148,))
+    inp = tf.keras.layers.Input(shape=(128,))
     x = tf.keras.layers.BatchNormalization()(inp)
     x = tf.keras.layers.Dropout(dropout_rates[3])(x)
 
@@ -78,8 +78,9 @@ def get_model(params_file,ae_weights = None, mlp_weights = None):
     #     MLP_.set_weights(mlp_weights)
     # else:
     #     MLP_.set_weights(mlp_weights)
-
-    out_mlp = MLP_(tf.keras.layers.Concatenate()([x, encoder]))
+    print(encoder.shape)
+    out_mlp = MLP_(encoder)
+    # out_mlp = MLP_(tf.keras.layers.Concatenate()([x, encoder]))
     model = tf.keras.models.Model(
         x, [
             out_ae,

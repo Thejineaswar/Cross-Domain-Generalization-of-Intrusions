@@ -3,24 +3,39 @@ import numpy as np
 BASE_DIR = "../Datasets/"
 DATA_LINK = [
     'CICIDS_2018_folds.csv',
-    'CICIDS_2017_folds.csv'
+    'CICIDS_2017_folds.csv',
+    'BOT_IOT_preprocessed.csv',
+    'NSL_KDD_preprocessed.csv',
+    'TON_IOT_preprocessd.csv',
+    'UNSW_NB15_preprocessed.csv'
 ]
 
 NUM_LABELS = [
     12,
-    15
+    15,
+    4,
+    5,
+    10,
+    10
 ]
 
-def split_data(multi_round = True): #to split it into multiple rounds
-    from sklearn.decomposition import PCA
+def print_summary():
+    print("Started")
+    for  i in DATA_LINK:
+        df = pd.read_csv(BASE_DIR + i)
+        if 'folds' not in df.columns:
+            print(i)
 
+
+
+def split_data(multi_round = True): #to split it into multiple rounds
+    from sklearn.preprocessing import MinMaxScaler
     x_train_all = []
     y_train_all = []
 
     x_test_all = []
     y_test_all = []
 
-    pca = []
 
     for i in range(len(DATA_LINK)):
         df = pd.read_csv(BASE_DIR + DATA_LINK[i])
@@ -35,7 +50,7 @@ def split_data(multi_round = True): #to split it into multiple rounds
         #     train = train.loc[train['folds'].isin([i for i in range(6,10)])]
 
 
-        pca_ = PCA(n_components=20, random_state=42)
+        scaler = MinMaxScaler()
 
         ytrain = train.iloc[:, -NUM_LABELS[i]:]
         ytest = test.iloc[:, -NUM_LABELS[i]:]
@@ -43,8 +58,8 @@ def split_data(multi_round = True): #to split it into multiple rounds
         xtest = test.iloc[:, :-NUM_LABELS[i]]
         assert ytrain.shape[0] == xtrain.shape[0]
         print(f"X_train {xtrain.shape}")
-        xtrain = pca_.fit_transform(xtrain)
-        xtest = pca_.transform(xtest)
+        xtrain = scaler.fit_transform(xtrain)
+        xtest = scaler.transform(xtest)
 
         x_train_all.append(np.asarray(xtrain))
         x_test_all.append(np.asarray(xtest))
@@ -52,14 +67,11 @@ def split_data(multi_round = True): #to split it into multiple rounds
         y_train_all.append(np.asarray(ytrain))
         y_test_all.append(np.asarray(ytest))
 
-        pca.append(pca_)
-
     return x_train_all,x_test_all,y_train_all,y_test_all
 
 
 if __name__ == "__main__":
     x_train_all,x_test_all,y_train_all,y_test_all = split_data()
-    print(x_train_all[1].shape)
 
 
 
