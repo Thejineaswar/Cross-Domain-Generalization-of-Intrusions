@@ -20,25 +20,6 @@ def MLP_with_weights(num_columns, num_labels, hidden_units, dropout_rates,weight
     out = tf.keras.layers.Dense(num_labels, activation='softmax', name='MLP')(temp.layers[-1].output)
     return tf.keras.models.Model(inputs=temp.input, outputs=[out])
 
-def Autoencoder(num_columns, num_labels, hidden_units, dropout_rates):
-    inp = tf.keras.layers.Input(shape=(num_columns,))
-    x0 = tf.keras.layers.BatchNormalization()(inp)
-
-    encoder = tf.keras.layers.GaussianNoise(dropout_rates[0])(x0)
-    encoder = tf.keras.layers.Dense(hidden_units[0])(encoder)
-    encoder = tf.keras.layers.BatchNormalization()(encoder)
-    encoder = tf.keras.layers.Activation('sigmoid')(encoder)
-
-    # Decoder
-    decoder = tf.keras.layers.Dropout(dropout_rates[1])(encoder)
-    decoder = tf.keras.layers.Dense(num_columns, name='decoder')(decoder)
-
-    x_ae = tf.keras.layers.Dense(hidden_units[1])(decoder)
-    x_ae = tf.keras.layers.BatchNormalization()(x_ae)
-    x_ae = tf.keras.layers.Activation('sigmoid')(x_ae)
-    x_ae = tf.keras.layers.Dropout(dropout_rates[2])(x_ae)
-    out_ae = tf.keras.layers.Dense(num_labels, activation='softmax', name='AE')(x_ae)
-    return tf.keras.models.Model(inputs=inp, outputs=[out_ae, encoder])
 
 
 def MLP(num_columns, num_labels, hidden_units, dropout_rates):
@@ -54,40 +35,24 @@ def MLP(num_columns, num_labels, hidden_units, dropout_rates):
     out = tf.keras.layers.Dense(num_labels, activation='softmax', name='MLP')(x)
     return tf.keras.models.Model(inputs=inp, outputs=[out])
 
-def get_model(params_file,ae_weights = None, mlp_weights = None):
+def get_model(params_file, mlp_weights = None):
     
-    x = tf.keras.layers.Input(shape=(params_file['num_columns'],))
-    noise = tf.keras.layers.GaussianNoise(params_file['dropout_rates'][0])(x)
-    AE = Autoencoder(**params_file)
+    x = tf.keras.layers.Input(shape=(128,))
 
-    if ae_weights is not None:
-        print(f"AE weights shape -> {len(ae_weights)}")
-        print(f"AE get  weights  -> {len(AE.get_weights())}")
-        AE.set_weights(ae_weights)
-
-    out_ae, encoder = AE(noise)
     if mlp_weights is None:
         MLP_ = MLP(**params_file)
     else:
         params_copy = params_file.copy()
         params_copy['weights'] = mlp_weights
         MLP_ = MLP_with_weights(**params_copy)
-        # print(MLP_.summary())
 
-    # if mlp_weights is not None:
-    #     MLP_.set_weights(mlp_weights)
-    # else:
-    #     MLP_.set_weights(mlp_weights)
-    print(encoder.shape)
-    out_mlp = MLP_(encoder)
-    # out_mlp = MLP_(tf.keras.layers.Concatenate()([x, encoder]))
+    out_mlp = MLP_(x)
     model = tf.keras.models.Model(
         x, [
-            out_ae,
             out_mlp
         ]
     )
-    return model, AE,MLP_
+    return model
 
 
 

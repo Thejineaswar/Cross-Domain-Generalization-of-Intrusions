@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
-BASE_DIR = "../Datasets/"
+BASE_DIR = "../AE_Datasets/"
 DATA_LINK = [
-    'CICIDS_2018_folds.csv',
-    'CICIDS_2017_folds.csv',
-    'BOT_IOT_preprocessed.csv',
-    'NSL_KDD_preprocessed.csv',
-    'TON_IOT_preprocessd.csv',
-    'UNSW_NB15_preprocessed.csv'
+    'CICIDS 2018',
+    'CICIDS 2017',
+    'BOT IOT',
+    'NSL_KDD',
+    'TON_IOT',
+    'UNSW_NB15'
 ]
 
 NUM_LABELS = [
@@ -38,26 +38,22 @@ def split_data(multi_round = True): #to split it into multiple rounds
 
 
     for i in range(len(DATA_LINK)):
-        df = pd.read_csv(BASE_DIR + DATA_LINK[i])
-        df = df.reset_index(drop = True)
-        test = df[df['folds'] == 5]
-        train = df[df['folds'] != 5]#df[df['folds'] != 5]
-
-        # if folds ==0:
-        #     train = train.loc[train['folds'].isin([i for i in range(0,5)])]
-        #     pca_ = PCA(n_components=20, random_state=42)
-        # else :
-        #     train = train.loc[train['folds'].isin([i for i in range(6,10)])]
-
-
+        train = pd.read_csv(BASE_DIR + DATA_LINK[i] + "_train.csv")
+        test = pd.read_csv(BASE_DIR + DATA_LINK[i] + "_valid.csv")
         scaler = MinMaxScaler()
+
+
 
         ytrain = train.iloc[:, -NUM_LABELS[i]:]
         ytest = test.iloc[:, -NUM_LABELS[i]:]
         xtrain = train.iloc[:, :-NUM_LABELS[i]]
         xtest = test.iloc[:, :-NUM_LABELS[i]]
         assert ytrain.shape[0] == xtrain.shape[0]
-        print(f"X_train {xtrain.shape}")
+        assert ytest.shape[0] == xtest.shape[0]
+        assert ytest.shape[1] == ytrain.shape[1]
+
+        # print(f"X_train of {DATA_LINK[i]} is {xtrain.shape}")
+        # print(f"X_test of {DATA_LINK[i]} is {xtest.shape}")
         xtrain = scaler.fit_transform(xtrain)
         xtest = scaler.transform(xtest)
 

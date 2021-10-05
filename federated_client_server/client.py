@@ -11,7 +11,7 @@ from models import *
 from tqdm.keras import TqdmCallback
 class Client:
 
-    def __init__(self, dataset_x, dataset_y, epoch_number, learning_rate, mlp_weights,ae_weights, batch,params):
+    def __init__(self, dataset_x, dataset_y, epoch_number, learning_rate, mlp_weights, batch,params):
         self.dataset_x = dataset_x
         self.dataset_y = dataset_y
         # self.mini_batch=mini_batch
@@ -19,7 +19,6 @@ class Client:
         self.learning_rate = learning_rate
         # self.decay_rate=decay_rate
         self.weights = mlp_weights
-        self.local_weights = ae_weights
         self.batch = batch
         self.params = params
 
@@ -27,42 +26,26 @@ class Client:
         """
         # from federated_client_server.server import *
         """
-        model,AE,MLP = get_model(params_file = self.params,
-                                 ae_weights = self.local_weights,
+        model = get_model(params_file = self.params,
                                  mlp_weights = self.weights
                                  )
-
-        # model.set_weights(self.weights)
-
-        # getting the initial weight of the model
-        # initial_weight=model.get_weights()
-        # output_weight_list=[]
-
-        # training the model
-        # import animation
-        # print('###### Client1 Training started ######')
-        # wait=animation.Wait()
-        # wait.start()
-
         model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=self.learning_rate),
                       loss=[
-                          tf.keras.losses.BinaryCrossentropy(),
                           tf.keras.losses.BinaryCrossentropy()
                       ],
                       metrics=[
-                          tf.keras.metrics.Accuracy(name='AE_Accuracy'),
-                          tf.keras.metrics.AUC(name='ANN_Accuracy'),
+                          tf.keras.metrics.CategoricalAccuracy(name='ANN_Accuracy'),
                       ]
                       )
 
         history = model.fit(
-            self.dataset_x, [self.dataset_y,self.dataset_y],
+            self.dataset_x, [self.dataset_y],
             epochs=self.epoch_number,
             batch_size=self.batch,
             verbose = 0,
             callbacks=[TqdmCallback(verbose=2)]
         )
-        return AE , MLP
+        return model
 
 
 
