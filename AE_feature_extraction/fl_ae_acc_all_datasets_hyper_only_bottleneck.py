@@ -25,14 +25,14 @@ def Encoder(num_columns, num_labels, hidden_units, dropout_rates):  # Hidden uni
     encoder = tf.keras.layers.GaussianNoise(dropout_rates[0])(x0)
     encoder = tf.keras.layers.Dense(hidden_units)(encoder)
     encoder = tf.keras.layers.BatchNormalization()(encoder)
-    encoder = tf.keras.layers.Activation('swish')(encoder)
+    encoder = tf.keras.layers.Activation('selu')(encoder)
 
     decoder = tf.keras.layers.Dropout(dropout_rates[1])(encoder)
     decoder = tf.keras.layers.Dense(num_columns, name='decoder')(decoder)
 
     x_ae = tf.keras.layers.Dense(128)(decoder)
     x_ae = tf.keras.layers.BatchNormalization()(x_ae)
-    x_ae = tf.keras.layers.Activation('swish')(x_ae)
+    x_ae = tf.keras.layers.Activation('selu')(x_ae)
     x_ae = tf.keras.layers.Dropout(dropout_rates[2])(x_ae)
     out_ae = tf.keras.layers.Dense(num_labels, activation='softmax', name='ae_out')(x_ae)
 
