@@ -4,7 +4,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 # If you want the NN to figure out the label to neuron mapping, set this flag to true
 BASE_DIR = "../Datasets/AE_formed_data/data"
-AUTO_NEURON_MAPPING = False
+AUTO_NEURON_MAPPING = True
 
 if not AUTO_NEURON_MAPPING:
     CLIENT_SOFT_ALLOCATION = {
