@@ -143,12 +143,12 @@ for i in range(len(DATA_LINK)):
 
     model, encoder, decoder = get_model(model_params[i])
     batch_size = 64
-    es = EarlyStopping(monitor='val_AE_ACC', min_delta=1e-4, patience=20, mode='max',
+    es = EarlyStopping(monitor='val_AE_ACC', min_delta=1e-4, patience=5, mode='max',
                        baseline=None, restore_best_weights=True, verbose=0)
     print(f"Starting training for {CLIENT_PRINT[i]}")
     history = model.fit(xtrain, [xtrain],
                         validation_data=(xtest, [xtest]),
-                        epochs=1, batch_size=batch_size, callbacks=[es], verbose=True)
+                        epochs=20, batch_size=batch_size, callbacks=[es], verbose=True)
     print(f"Training for {CLIENT_PRINT[i]} Done")
     train_df = encoder.predict(xtrain)
     train_df = pd.DataFrame(data=train_df, index=[i for i in range(train_df.shape[0])],

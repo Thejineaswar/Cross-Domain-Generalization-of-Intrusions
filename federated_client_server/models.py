@@ -1,50 +1,44 @@
 import tensorflow as tf
 
-def MLP_with_weights(num_columns, num_labels, hidden_units, dropout_rates,weights):
-    inp = tf.keras.layers.Input(shape=(128,))
-    x = tf.keras.layers.BatchNormalization()(inp)
-    x = tf.keras.layers.Dropout(dropout_rates[3])(x)
 
-    for i in range(2, len(hidden_units)):
-        x = tf.keras.layers.Dense(hidden_units[i])(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.Activation('sigmoid')(x)
-        x = tf.keras.layers.Dropout(dropout_rates[i + 2])(x)
-    temp = tf.keras.models.Model(inputs = inp, outputs = x)
-    print(len(weights))
-    if(len(weights) == 30):
-        temp.set_weights(weights[:-2])
-    else:
-        temp.set_weights(weights)
+def MLP(num_columns, num_labels, hidden_units, dropout_rates, weights=None):
+    inp = tf.keras.layers.Input(shape=(num_columns,))
+    x = tf.keras.layers.Dense(hidden_units[2])(inp)
+    x = tf.keras.layers.Activation('selu')(x)
 
-    out = tf.keras.layers.Dense(num_labels, activation='softmax', name='MLP')(temp.layers[-1].output)
-    return tf.keras.models.Model(inputs=temp.input, outputs=[out])
+    x = tf.keras.layers.Dense(hidden_units[3])(x)
+    x = tf.keras.layers.Activation('selu')(x)
+
+    x = tf.keras.layers.Dense(hidden_units[4])(x)
+    x = tf.keras.layers.Activation('selu')(x)
+
+    x = tf.keras.layers.Dense(hidden_units[5])(x)
+    x = tf.keras.layers.Activation('selu')(x)
+
+    out = tf.keras.layers.Dense(num_labels, name='MLP')(x)
+    out = tf.keras.layers.Activation('sigmoid')(out)
+
+    model = tf.keras.models.Model(inputs=inp, outputs=[out])
+    if weights is not None:
+        model.set_weights(weights)
+
+    return model
 
 
-
-def MLP(num_columns, num_labels, hidden_units, dropout_rates):
-    inp = tf.keras.layers.Input(shape=(128,))
-    x = tf.keras.layers.BatchNormalization()(inp)
-    x = tf.keras.layers.Dropout(dropout_rates[3])(x)
-
-    for i in range(2, len(hidden_units)):
-        x = tf.keras.layers.Dense(hidden_units[i])(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.Activation('sigmoid')(x)
-        x = tf.keras.layers.Dropout(dropout_rates[i + 2])(x)
-    out = tf.keras.layers.Dense(num_labels, activation='softmax', name='MLP')(x)
-    return tf.keras.models.Model(inputs=inp, outputs=[out])
-
-def get_model(params_file, mlp_weights = None):
-    
-    x = tf.keras.layers.Input(shape=(128,))
-
+def get_model(params_file, mlp_weights=None):
+    x = tf.keras.layers.Input(shape=(params_file["num_columns"],))
+    params_copy = params_file.copy()
     if mlp_weights is None:
-        MLP_ = MLP(**params_file)
+        params_copy['weights'] = None
+        MLP_ = MLP(**params_copy)
     else:
         params_copy = params_file.copy()
         params_copy['weights'] = mlp_weights
-        MLP_ = MLP_with_weights(**params_copy)
+        #         if last_dense is not None:
+        #             params_copy['last_dense'] = last_dense
+        #         else:
+        #             params_copy['last_dense'] = None
+        MLP_ = MLP(**params_copy)
 
     out_mlp = MLP_(x)
     model = tf.keras.models.Model(
