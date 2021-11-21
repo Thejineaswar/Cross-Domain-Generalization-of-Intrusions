@@ -1,18 +1,10 @@
 
 import pandas as pd
-import pickle
-import numpy as np
-
-from sklearn.decomposition import PCA
-from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import MinMaxScaler
 
 import tensorflow as tf
 
 tf.random.set_seed(42)
-import tensorflow.keras.backend as K
-import tensorflow.keras.layers as layers
-from tensorflow.keras.callbacks import Callback, ReduceLROnPlateau, ModelCheckpoint, EarlyStopping
 
 # !pip install optuna
 import optuna

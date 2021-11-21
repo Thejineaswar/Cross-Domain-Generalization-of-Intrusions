@@ -7,9 +7,10 @@ from client import Client
 
 from models import *
 from data import *
-from model_params import *
 
 DEBUG = False
+
+os.makedirs("federated_model_weights/")
 
 def model_average(client_weights):
     average_weight_list = []
@@ -23,8 +24,8 @@ def model_average(client_weights):
     return average_weight_list
 
 
-def create_model(params,ae_weights = None,mlp_weights = None):
-    model = get_model(params)
+def create_model():
+    model = get_model()
     ann_weight = model.get_weights()
     return ann_weight
 
@@ -38,7 +39,7 @@ CLIENT_PRINT = {
     5:"UNSW_NB15"
 }
 
-PARAMS = get_model_params()
+# PARAMS = get_model_params()
 
 def train_server(training_rounds, epoch, batch, learning_rate):
     accuracy_list = []
@@ -52,7 +53,7 @@ def train_server(training_rounds, epoch, batch, learning_rate):
             print('-------Client-------', CLIENT_PRINT[index])
             if index1 == 1:
                 print('Sharing Initial Global Model with Random Weight Initialization')
-                initial_weight= create_model(PARAMS)
+                initial_weight= create_model()
                 client = Client(
                         x_data[index],
                         y_data[index],
@@ -60,7 +61,6 @@ def train_server(training_rounds, epoch, batch, learning_rate):
                         learning_rate,
                         initial_weight,
                         batch,
-                    PARAMS
                     )
                 MLP_weights = client.train()
                 client_weights_tobe_averaged.append(MLP_weights.get_weights())
@@ -72,19 +72,21 @@ def train_server(training_rounds, epoch, batch, learning_rate):
                                 learning_rate,
                                 client_weight_for_sending[index1 - 2],
                                 batch,
-                                PARAMS
                                )
                 MLP_weights = client.train()
                 client_weights_tobe_averaged.append(MLP_weights.get_weights())
 
         client_average_weight= model_average(client_weights_tobe_averaged)
         client_weight_for_sending.append(client_average_weight)
-        with open(f'FL_round_{index1}.txt', 'wb') as f:
+
+        with open(f'federated_model_weights/FL_round_{index1}.txt', 'wb') as f:
                 pickle.dump(client_average_weight, f)
+
         if index1 != 1:
-            os.remove(f'FL_round_{index1 - 1}.txt')
+            os.remove(f'federated_model_weights/FL_round_{index1 - 1}.txt')
+
         print(f"Evaluation for round{index1}:")
-        model = get_model(PARAMS,
+        model = get_model(
                           mlp_weights=client_average_weight,
                           )
 
@@ -107,8 +109,8 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
 if __name__ == '__main__':
     training_accuracy_list = train_server(
-                                                training_rounds=2,
-                                                epoch=1,
+                                                training_rounds=500,
+                                                epoch=3,
                                                 batch=32,
                                                 learning_rate=0.001
                                              )

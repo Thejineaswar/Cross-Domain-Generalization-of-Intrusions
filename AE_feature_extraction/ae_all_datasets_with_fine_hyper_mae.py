@@ -2,13 +2,17 @@ BASE_DIR = ""
 
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-# import os
+import os
 import tensorflow as tf
 
 tf.random.set_seed(42)
 from tensorflow.keras.callbacks import EarlyStopping
 
 BASE_DIR = "../Datasets/"
+
+
+os.makedirs("../Datasets/AE_formed_data/")
+
 DATA_LINK = [
     'CICIDS_2018_folds.csv',
     'CICIDS_2017_folds.csv',
@@ -160,8 +164,8 @@ for i in range(len(DATA_LINK)):
                             columns=[i + 1 for i in range(valid_df.shape[1])])
     valid_df = pd.concat([valid_df, ytest.reset_index(drop=True)], axis=1)
 
-    # os.makedirs("../Datasets/AE_formed_data/labels")
-    # os.makedirs("../Datasets/AE_formed_data/data")
+    os.makedirs("../Datasets/AE_formed_data/labels")
+    os.makedirs("../Datasets/AE_formed_data/data")
 
     train_df.to_csv("../Datasets/AE_formed_data/data/" + f"{CLIENT_PRINT[i]}_train.csv", index=False)
     valid_df.to_csv("../Datasets/AE_formed_data/data/" + f"{CLIENT_PRINT[i]}_valid.csv", index=False)
