@@ -1,4 +1,4 @@
-# IoT-IDS-using-Federated-Learning
+# Cross Domain Generalization of Intrusions using Federated Learning
 ### Instructions to run the code
 * To get the Autoencoder processed dataset, run the `AE_feature_extraction/ae_all_datasets_with_hyper_mae.py"
   * If you need to change the dimensions of AE bottleneck layer change the value of the variable `AE_HIDDEN_UNITS`   
