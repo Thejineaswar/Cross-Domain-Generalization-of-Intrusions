@@ -1,4 +1,6 @@
 # Cross Domain Generalization of Intrusions using Federated Learning
+By [Thejineaswar Guhan](https://www.linkedin.com/in/gthejin/), [Krishna Yadav](https://in.linkedin.com/in/krishna-yadav-434324192) part of [SAI LAB](https://saailab.github.io/)
+
 ### Instructions to run the code
 * To get the Autoencoder processed dataset, run the `AE_feature_extraction/ae_all_datasets_with_hyper_mae.py"
   * If you need to change the dimensions of AE bottleneck layer change the value of the variable `AE_HIDDEN_UNITS`   
