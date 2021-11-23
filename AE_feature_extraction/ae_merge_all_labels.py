@@ -109,8 +109,8 @@ for i in CLIENT_SOFT_ALLOCATION.values():
         test_labels[j] = t
     print(test_labels.shape)
     print(train_labels.shape)
-    with open("../Datasets/AE_formed_data/Label/" + i['name'] + '_train.npy', 'wb') as f:
+    with open("../Datasets/AE_formed_data/labels/" + i['name'] + '_train.npy', 'wb') as f:
         np.save(f, train_labels)
 
-    with open("../Datasets/AE_formed_data/Label/" + i['name'] + '_test.npy', 'wb') as f:
+    with open("../Datasets/AE_formed_data/labels/" + i['name'] + '_test.npy', 'wb') as f:
         np.save(f, test_labels)

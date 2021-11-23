@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 BASE_DIR = "../Datasets/AE_formed_data/Data/"
-LABEL_DIR = "../Datasets/AE_formed_data/Label/"
+LABEL_DIR = "../Datasets/AE_formed_data/labels/"
 
 
 DATA_LINK = [

@@ -11,7 +11,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 BASE_DIR = "../Datasets/"
 
 
-os.makedirs("../Datasets/AE_formed_data/")
+os.makedirs("../Datasets/AE_formed_data/",exist_ok = True)
 
 DATA_LINK = [
     'CICIDS_2018_folds.csv',
@@ -32,8 +32,6 @@ NUM_LABELS = [
     10,
     10
 ]
-
-
 
 def Encoder(num_columns, num_labels,hidden_units, dropout_rates):
     inp = tf.keras.layers.Input(shape=(num_columns,))
@@ -152,7 +150,7 @@ for i in range(len(DATA_LINK)):
     print(f"Starting training for {CLIENT_PRINT[i]}")
     history = model.fit(xtrain, [xtrain],
                         validation_data=(xtest, [xtest]),
-                        epochs=20, batch_size=batch_size, callbacks=[es], verbose=True)
+                        epochs=1, batch_size=batch_size, callbacks=[es], verbose=True)
     print(f"Training for {CLIENT_PRINT[i]} Done")
     train_df = encoder.predict(xtrain)
     train_df = pd.DataFrame(data=train_df, index=[i for i in range(train_df.shape[0])],
@@ -164,8 +162,8 @@ for i in range(len(DATA_LINK)):
                             columns=[i + 1 for i in range(valid_df.shape[1])])
     valid_df = pd.concat([valid_df, ytest.reset_index(drop=True)], axis=1)
 
-    os.makedirs("../Datasets/AE_formed_data/labels")
-    os.makedirs("../Datasets/AE_formed_data/data")
+    os.makedirs("../Datasets/AE_formed_data/labels",exist_ok = True )
+    os.makedirs("../Datasets/AE_formed_data/data",exist_ok = True)
 
     train_df.to_csv("../Datasets/AE_formed_data/data/" + f"{CLIENT_PRINT[i]}_train.csv", index=False)
     valid_df.to_csv("../Datasets/AE_formed_data/data/" + f"{CLIENT_PRINT[i]}_valid.csv", index=False)

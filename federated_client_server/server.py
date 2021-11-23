@@ -10,7 +10,7 @@ from data import *
 
 DEBUG = False
 
-os.makedirs("federated_model_weights/")
+os.makedirs("federated_model_weights/",exist_ok = True )
 
 def model_average(client_weights):
     average_weight_list = []
@@ -99,7 +99,7 @@ def train_server(training_rounds, epoch, batch, learning_rate):
             ]
         )
         for index in range(len(y_test)):
-            result = model.evaluate(x_test[index], [y_test[index]])
+            result = model.evaluate(x_test[index], [y_test[index]],verbose = False)
             accuracy = result
             print(f"###### Accuracy for {CLIENT_PRINT[index]} -> {result}")
             accuracy_list.append(accuracy)
@@ -109,8 +109,8 @@ def train_server(training_rounds, epoch, batch, learning_rate):
 
 if __name__ == '__main__':
     training_accuracy_list = train_server(
-                                                training_rounds=500,
-                                                epoch=3,
+                                                training_rounds=2,
+                                                epoch=1,
                                                 batch=32,
                                                 learning_rate=0.001
                                              )
