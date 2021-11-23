@@ -150,7 +150,7 @@ for i in range(len(DATA_LINK)):
     print(f"Starting training for {CLIENT_PRINT[i]}")
     history = model.fit(xtrain, [xtrain],
                         validation_data=(xtest, [xtest]),
-                        epochs=1, batch_size=batch_size, callbacks=[es], verbose=True)
+                        epochs=20, batch_size=batch_size, callbacks=[es], verbose=True)
     print(f"Training for {CLIENT_PRINT[i]} Done")
     train_df = encoder.predict(xtrain)
     train_df = pd.DataFrame(data=train_df, index=[i for i in range(train_df.shape[0])],
